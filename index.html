@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FootMeasure - Running Tracker</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="container">
+      <header>
+        <div class="logo">
+          <i class="fas fa-shoe-prints"></i>
+          <h1>FootMeasure</h1>
+        </div>
+        <p class="subtitle">Track your runs with precision</p>
+      </header>
+
+      <div class="card">
+        <div class="stats-container">
+          <div class="stat-box">
+            <div class="stat-value" id="distance">0.00</div>
+            <div class="stat-label">Kilometers</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="pace">0:00</div>
+            <div class="stat-label">Pace (min/km)</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="time">00:00:00</div>
+            <div class="stat-label">Time</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="calories">0</div>
+            <div class="stat-label">Calories</div>
+          </div>
+        </div>
+
+        <div class="status gps-inactive" id="status">
+          <i class="fas fa-map-marker-alt"></i> GPS: Waiting for location...
+        </div>
+
+        <div class="controls">
+          <button class="start-btn" id="startBtn">
+            <i class="fas fa-play"></i> Start
+          </button>
+          <button class="stop-btn" id="stopBtn" disabled>
+            <i class="fas fa-pause"></i> Pause
+          </button>
+          <button class="reset-btn" id="resetBtn">
+            <i class="fas fa-redo"></i> Reset
+          </button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3><i class="fas fa-map-marked-alt"></i> Your Location</h3>
+        <div class="map-container">
+          <div class="map-placeholder">
+            <i class="fas fa-map"></i>
+            <p>Map will appear here when tracking</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="card history">
+        <h3><i class="fas fa-history"></i> Recent Runs</h3>
+        <ul class="history-list" id="historyList">
+          <li class="history-item">
+            <div class="history-date">No runs recorded yet</div>
+            <div class="history-distance">0.00 km</div>
+          </li>
+        </ul>
+      </div>
+
+      <div class="footer">
+        <p>FootMeasure &copy; 2023 | Track your fitness journey</p>
+      </div>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>
