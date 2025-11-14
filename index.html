@@ -7,6 +7,9 @@
     <link
       rel="stylesheet"
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
@@ -57,11 +60,12 @@
       </div>
 
       <div class="card">
-        <h3><i class="fas fa-map-marked-alt"></i> Your Location</h3>
+        <h3><i class="fas fa-map-marked-alt"></i> Your Route</h3>
         <div class="map-container">
-          <div class="map-placeholder">
+          <div id="map"></div>
+          <div class="map-placeholder" id="mapPlaceholder">
             <i class="fas fa-map"></i>
-            <p>Map will appear here when tracking</p>
+            <p>Map will appear here when tracking starts</p>
           </div>
         </div>
       </div>
@@ -81,6 +85,7 @@
       </div>
     </div>
 
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

@@ -7,6 +7,9 @@ const state = {
     positions: [],
     totalDistance: 0,
     watchId: null,
+    map: null,
+    pathLayer: null,
+    currentPositionMarker: null,
 };
 
 // DOM Elements
@@ -19,6 +22,30 @@ const paceEl = document.getElementById("pace");
 const caloriesEl = document.getElementById("calories");
 const statusEl = document.getElementById("status");
 const historyList = document.getElementById("historyList");
+const mapPlaceholder = document.getElementById("mapPlaceholder");
+
+// Initialize the map
+function initMap() {
+    // Create a map centered on a default location
+    state.map = L.map("map").setView([0, 0], 2);
+
+    // Add a tile layer (using OpenStreetMap)
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution:
+            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    }).addTo(state.map);
+
+    // Initialize the path layer
+    state.pathLayer = L.polyline([], {
+        color: "#2575fc",
+        weight: 5,
+        opacity: 0.7,
+        lineJoin: "round",
+    }).addTo(state.map);
+
+    // Hide the map initially
+    state.map.getContainer().style.display = "none";
+}
 
 // Format time as HH:MM:SS
 function formatTime(seconds) {
@@ -33,7 +60,7 @@ function formatTime(seconds) {
 
 // Calculate pace in min/km
 function calculatePace(distance, time) {
-    if (distance === 0) return 0;
+    if (distance === 0) return "0:00";
     const paceInSeconds = time / distance;
     const minutes = Math.floor(paceInSeconds / 60);
     const seconds = Math.floor(paceInSeconds % 60);
@@ -76,6 +103,45 @@ function updateUI() {
     );
 }
 
+// Update the map with current position and path
+function updateMap(latitude, longitude) {
+    const position = [latitude, longitude];
+
+    // Show the map if it's hidden
+    if (state.map.getContainer().style.display === "none") {
+        state.map.getContainer().style.display = "block";
+        mapPlaceholder.style.display = "none";
+    }
+
+    // Add the new position to the path
+    state.pathLayer.addLatLng(position);
+
+    // Update or create the current position marker
+    if (state.currentPositionMarker) {
+        state.currentPositionMarker.setLatLng(position);
+    } else {
+        state.currentPositionMarker = L.marker(position, {
+            icon: L.divIcon({
+                className: "current-position-marker",
+                html: '<i class="fas fa-location-dot" style="color: #ff3b30; font-size: 24px;"></i>',
+                iconSize: [24, 24],
+                iconAnchor: [12, 12],
+            }),
+        }).addTo(state.map);
+    }
+
+    // Adjust map view to show the current position and path
+    if (state.positions.length === 1) {
+        // First position, center on it
+        state.map.setView(position, 16);
+    } else {
+        // Adjust view to fit the path
+        state.map.fitBounds(state.pathLayer.getBounds(), {
+            padding: [20, 20],
+        });
+    }
+}
+
 // Start tracking
 function startTracking() {
     if (state.isTracking) return;
@@ -97,7 +163,7 @@ function startTracking() {
 
         state.watchId = navigator.geolocation.watchPosition(
             (position) => {
-                const { latitude, longitude } = position.coords;
+                const { latitude, longitude, accuracy } = position.coords;
 
                 // Add position to history
                 if (state.positions.length > 0) {
@@ -114,10 +180,12 @@ function startTracking() {
                 state.positions.push({
                     latitude,
                     longitude,
+                    accuracy,
                     timestamp: Date.now(),
                 });
 
                 updateUI();
+                updateMap(latitude, longitude);
             },
             (error) => {
                 console.error("Error getting location:", error);
@@ -176,6 +244,19 @@ function resetTracking() {
     state.positions = [];
     state.totalDistance = 0;
 
+    // Reset the map
+    if (state.pathLayer) {
+        state.pathLayer.setLatLngs([]);
+    }
+    if (state.currentPositionMarker) {
+        state.map.removeLayer(state.currentPositionMarker);
+        state.currentPositionMarker = null;
+    }
+
+    // Hide the map and show placeholder
+    state.map.getContainer().style.display = "none";
+    mapPlaceholder.style.display = "flex";
+
     updateUI();
 
     statusEl.innerHTML =
@@ -195,11 +276,11 @@ function saveToHistory() {
     const historyItem = document.createElement("li");
     historyItem.className = "history-item";
     historyItem.innerHTML = `
-                <div class="history-date">${dateStr}</div>
-                <div class="history-distance">${state.totalDistance.toFixed(
+    <div class="history-date">${dateStr}</div>
+    <div class="history-distance">${state.totalDistance.toFixed(
         2
     )} km</div>
-            `;
+    `;
 
     // Add to top of history list
     if (historyList.firstChild.textContent.includes("No runs")) {
@@ -218,5 +299,11 @@ startBtn.addEventListener("click", startTracking);
 stopBtn.addEventListener("click", stopTracking);
 resetBtn.addEventListener("click", resetTracking);
 
-// Initialize UI
-updateUI();
+// Initialize the application
+function initApp() {
+    initMap();
+    updateUI();
+}
+
+// Start the application when the page loads
+window.addEventListener("load", initApp);
