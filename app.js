@@ -10,18 +10,20 @@ const state = {
     map: null,
     pathLayer: null,
     currentPositionMarker: null,
+    savedRuns: [],
 };
 
 // DOM Elements
 const startBtn = document.getElementById("startBtn");
 const stopBtn = document.getElementById("stopBtn");
 const resetBtn = document.getElementById("resetBtn");
+const saveBtn = document.getElementById("saveBtn");
 const distanceEl = document.getElementById("distance");
 const timeEl = document.getElementById("time");
-const paceEl = document.getElementById("pace");
+const speedEl = document.getElementById("speed");
 const caloriesEl = document.getElementById("calories");
 const statusEl = document.getElementById("status");
-const historyList = document.getElementById("historyList");
+const savedRunsList = document.getElementById("savedRunsList");
 const mapPlaceholder = document.getElementById("mapPlaceholder");
 
 // Initialize the map
@@ -58,14 +60,10 @@ function formatTime(seconds) {
         .padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
 }
 
-// Calculate pace in min/km
-function calculatePace(distance, time) {
-    if (distance === 0) return "0:00";
-    const paceInSeconds = time / distance;
-    const minutes = Math.floor(paceInSeconds / 60);
-    const seconds = Math.floor(paceInSeconds % 60);
-
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+// Calculate speed in km/h
+function calculateSpeed(distance, time) {
+    if (time === 0) return 0;
+    return (distance / (time / 3600)).toFixed(1);
 }
 
 // Calculate calories burned (simplified calculation)
@@ -93,7 +91,7 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 function updateUI() {
     distanceEl.textContent = state.totalDistance.toFixed(2);
     timeEl.textContent = formatTime(state.currentTime);
-    paceEl.textContent = calculatePace(
+    speedEl.textContent = calculateSpeed(
         state.totalDistance,
         state.currentTime
     );
@@ -101,6 +99,9 @@ function updateUI() {
         state.totalDistance,
         state.currentTime
     );
+
+    // Enable save button if there's a meaningful run
+    saveBtn.disabled = state.totalDistance < 0.01;
 }
 
 // Update the map with current position and path
@@ -140,6 +141,74 @@ function updateMap(latitude, longitude) {
             padding: [20, 20],
         });
     }
+}
+
+// Save current run
+function saveCurrentRun() {
+    if (state.totalDistance < 0.01) {
+        alert("Run is too short to save. Please run at least 10 meters.");
+        return;
+    }
+
+    const runData = {
+        id: Date.now(),
+        date: new Date(),
+        distance: state.totalDistance,
+        time: state.currentTime,
+        positions: [...state.positions],
+    };
+
+    state.savedRuns.push(runData);
+    updateSavedRunsList();
+
+    // Show confirmation
+    alert(
+        `Run saved successfully!\nDistance: ${state.totalDistance.toFixed(
+            2
+        )} km\nTime: ${formatTime(state.currentTime)}`
+    );
+}
+
+// Update the saved runs list
+function updateSavedRunsList() {
+    if (state.savedRuns.length === 0) {
+        savedRunsList.innerHTML = `
+                    <li class="saved-run-item">
+                        <div class="saved-run-header">
+                            <div class="saved-run-date">No saved runs yet</div>
+                            <div class="saved-run-distance">0.00 km</div>
+                        </div>
+                    </li>
+                `;
+        return;
+    }
+
+    savedRunsList.innerHTML = state.savedRuns
+        .slice()
+        .reverse()
+        .map(
+            (run) => `
+    <li class="saved-run-item">
+        <div class="saved-run-header">
+            <div class="saved-run-date">${run.date.toLocaleDateString()} ${run.date.toLocaleTimeString(
+                [],
+                { hour: "2-digit", minute: "2-digit" }
+            )}</div>
+            <div class="saved-run-distance">${run.distance.toFixed(
+                2
+            )} km</div>
+        </div>
+        <div class="saved-run-details">
+            <div>Time: ${formatTime(run.time)}</div>
+            <div>Speed: ${calculateSpeed(
+                run.distance,
+                run.time
+            )} km/h</div>
+        </div>
+    </li>
+    `
+        )
+        .join("");
 }
 
 // Start tracking
@@ -228,11 +297,6 @@ function stopTracking() {
     // Update button states
     startBtn.disabled = false;
     stopBtn.disabled = true;
-
-    // Save to history if we have a meaningful run
-    if (state.totalDistance > 0.1) {
-        saveToHistory();
-    }
 }
 
 // Reset tracking
@@ -264,45 +328,41 @@ function resetTracking() {
     statusEl.className = "status gps-inactive";
 }
 
-// Save run to history
-function saveToHistory() {
-    const now = new Date();
-    const dateStr =
-        now.toLocaleDateString() +
-        " " +
-        now.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-
-    // Create history item
-    const historyItem = document.createElement("li");
-    historyItem.className = "history-item";
-    historyItem.innerHTML = `
-    <div class="history-date">${dateStr}</div>
-    <div class="history-distance">${state.totalDistance.toFixed(
-        2
-    )} km</div>
-    `;
-
-    // Add to top of history list
-    if (historyList.firstChild.textContent.includes("No runs")) {
-        historyList.innerHTML = "";
-    }
-    historyList.prepend(historyItem);
-
-    // Keep only last 5 runs
-    if (historyList.children.length > 5) {
-        historyList.removeChild(historyList.lastChild);
-    }
-}
-
 // Event listeners
 startBtn.addEventListener("click", startTracking);
 stopBtn.addEventListener("click", stopTracking);
 resetBtn.addEventListener("click", resetTracking);
+saveBtn.addEventListener("click", saveCurrentRun);
 
 // Initialize the application
 function initApp() {
     initMap();
     updateUI();
+    updateSavedRunsList();
+
+    // Load saved runs from localStorage if available
+    const savedRunsData = localStorage.getItem("footmeasure_saved_runs");
+    if (savedRunsData) {
+        try {
+            const parsedData = JSON.parse(savedRunsData);
+            // Convert date strings back to Date objects
+            state.savedRuns = parsedData.map((run) => ({
+                ...run,
+                date: new Date(run.date),
+            }));
+            updateSavedRunsList();
+        } catch (e) {
+            console.error("Error loading saved runs:", e);
+        }
+    }
+
+    // Save runs to localStorage when the page is about to unload
+    window.addEventListener("beforeunload", () => {
+        localStorage.setItem(
+            "footmeasure_saved_runs",
+            JSON.stringify(state.savedRuns)
+        );
+    });
 }
 
 // Start the application when the page loads

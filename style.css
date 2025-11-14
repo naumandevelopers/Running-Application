@@ -98,8 +98,10 @@ h1 {
 
 .controls {
   display: flex;
+  flex-wrap: wrap;
   justify-content: space-between;
-  gap: 15px;
+  gap: 10px;
+  margin-bottom: 15px;
 }
 
 button {
@@ -115,6 +117,7 @@ button {
   align-items: center;
   justify-content: center;
   gap: 8px;
+  min-width: 120px;
 }
 
 .start-btn {
@@ -144,6 +147,16 @@ button {
 
 .reset-btn:hover {
   background: #4ab0e0;
+  transform: scale(1.05);
+}
+
+.save-btn {
+  background: #ffcc00;
+  color: #333;
+}
+
+.save-btn:hover {
+  background: #e6b800;
   transform: scale(1.05);
 }
 
@@ -197,6 +210,8 @@ button {
 
 .history-list {
   list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
 }
 
 .history-item {
@@ -217,6 +232,17 @@ button {
 .history-distance {
   font-weight: 600;
   font-size: 1.1rem;
+}
+
+.history-item-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.history-item-actions button {
+  padding: 6px 10px;
+  font-size: 0.8rem;
+  min-width: auto;
 }
 
 .status {
@@ -254,6 +280,54 @@ button {
   fill: #ff3b30;
   stroke: white;
   stroke-width: 2;
+}
+
+.saved-runs {
+  width: 100%;
+}
+
+.saved-runs h3 {
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.saved-runs-list {
+  list-style: none;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.saved-run-item {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 15px;
+  margin-bottom: 10px;
+}
+
+.saved-run-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.saved-run-date {
+  font-size: 0.9rem;
+  opacity: 0.8;
+}
+
+.saved-run-distance {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.saved-run-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  opacity: 0.8;
 }
 
 @media (max-width: 400px) {

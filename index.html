@@ -12,6 +12,7 @@
       href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
     <link rel="stylesheet" href="style.css" />
   </head>
+
   <body>
     <div class="container">
       <header>
@@ -29,12 +30,12 @@
             <div class="stat-label">Kilometers</div>
           </div>
           <div class="stat-box">
-            <div class="stat-value" id="pace">0:00</div>
-            <div class="stat-label">Pace (min/km)</div>
-          </div>
-          <div class="stat-box">
             <div class="stat-value" id="time">00:00:00</div>
             <div class="stat-label">Time</div>
+          </div>
+          <div class="stat-box">
+            <div class="stat-value" id="speed">0.0</div>
+            <div class="stat-label">Speed (km/h)</div>
           </div>
           <div class="stat-box">
             <div class="stat-value" id="calories">0</div>
@@ -56,6 +57,9 @@
           <button class="reset-btn" id="resetBtn">
             <i class="fas fa-redo"></i> Reset
           </button>
+          <button class="save-btn" id="saveBtn" disabled>
+            <i class="fas fa-save"></i> Save Run
+          </button>
         </div>
       </div>
 
@@ -70,12 +74,14 @@
         </div>
       </div>
 
-      <div class="card history">
-        <h3><i class="fas fa-history"></i> Recent Runs</h3>
-        <ul class="history-list" id="historyList">
-          <li class="history-item">
-            <div class="history-date">No runs recorded yet</div>
-            <div class="history-distance">0.00 km</div>
+      <div class="card saved-runs">
+        <h3><i class="fas fa-history"></i> Saved Runs</h3>
+        <ul class="saved-runs-list" id="savedRunsList">
+          <li class="saved-run-item">
+            <div class="saved-run-header">
+              <div class="saved-run-date">No saved runs yet</div>
+              <div class="saved-run-distance">0.00 km</div>
+            </div>
           </li>
         </ul>
       </div>
